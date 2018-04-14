@@ -15,8 +15,18 @@ var income=function(id,description,value){
 }
 
 
+var calculateTotal=function(type){
+				var sum=0;
+				data.allItems[type].forEach(function(cur){
+				sum=sum+cur.value;
+				});
+			 data.totals.type=sum;
 
-	  var data={
+			  };  
+
+            
+
+	        var data={
 					allItems:{
 
 							exp:[],
@@ -25,46 +35,72 @@ var income=function(id,description,value){
 					totals:{
 							exp:0,
 							inc:0 
-					  }
+					  },
+					  budget:0,
+					  percentage:-1
                };
 
-return{
+						return{
 
 
-	addItem:function(type,des,val){
+							addItem:function(type,des,val){
 
-		var newItem,ID;
+								var newItem,ID;
 
-		//Create new id
-		if(data.allItems[type].lenght>0){		
-			ID=data.allItems[type][data.allItems[type].lenght-1].id+1;
-					}else{
-							ID=0;
-						}
-		//create new item based on inc and exp
+								//Create new id
+								if(data.allItems[type].lenght>0){		
+									ID=data.allItems[type][data.allItems[type].lenght-1].id+1;
+											}else{
+													ID=0;
+												}
+								//create new item based on inc and exp
 
-		if(type==='exp'){
-        newItem=new Expense(ID,des,val);
+								if(type==='exp'){
+						        newItem=new Expense(ID,des,val);
 
-		}else if(type==='inc'){
-          newItem=new income(ID,des,val);
-		}
-        
-        //push into your data structure
-		data.allItems[type].push(newItem);
-		//return the new element
-		return newItem;
+								}else if(type==='inc'){
+						          newItem=new income(ID,des,val);
+								}
+						        
+						        //push into your data structure
+								data.allItems[type].push(newItem);
+								//return the new element
+								return newItem;
 
-	},
+							},
+						   
+						   				calculateBudget:function(){
+						   					//calculate the income and expenses
+						                        calculateTotal('exp');
+						                        calculateTotal('inc');
 
-	testing:function(){
+						   					//calculate the budget :income -expenses
 
-		console.log(data);
-			           }
-}
+						   					data.budget=data.totals.inc-data.totals.exp; 
+						   					//calculate the percentage of budget theat we spent
+						                     data.percentage=Math.round((data.totals.exp/data.totals.inc)*100);
+						                    },
+
+						                 getBudget:function(){
+
+						                            return{
+
+						                                   budget:data.budget,
+						                                   totalInc:data.totals.inc,
+						                                   totalExp:data.totals.exp,
+						                                   percentage:data.percentage
 
 
-	})();
+						                                   };
+						                                 
+						                                 },
+						                 testing:function(){
+						                 	console.log(data);
+						                 }
+
+									};
+
+							})();
 
 
 
@@ -107,9 +143,10 @@ var UIController=(function(){
                                   document.querySelector(element).insertAdjacentHTML('beforeend',newHtml);
 
 								},
+
 								clearFields:function(){
 									var fields,fieldsArr;	
-									fields=document.querySelectorAll(DOMstrings.inputdescription+','+ DOMstrings.inputValues);
+									fields=document.querySelectorAll(DOMstrings.inputdescription +','+ DOMstrings.inputValues);
                                     fieldsArr=Array.prototype.slice.call(fields);	
 
                                     fieldsArr.forEach(function(current,index,array){
@@ -123,7 +160,7 @@ var UIController=(function(){
 								
 								 getDomStrings:function(){
 
-														 return DOMstrings;
+									 return DOMstrings;
 									  }
 									}
 
@@ -138,24 +175,22 @@ var controller=(function(budgetCtrl,UICtrl){
 	var setUpEventListeners=function(){
 
 
-           var DOM=UICtrl.getDomStrings();
-				document.querySelector(DOM.inpBtn).addEventListener('click',ctrlAddItem);
-				document.addEventListener('keypress',function(event){
-				if(event.keyCode===13||event.which===13){
-					ctrlAddItem();
+			           var DOM=UICtrl.getDomStrings();
+							document.querySelector(DOM.inpBtn).addEventListener('click',ctrlAddItem);
+							document.addEventListener('keypress',function(event){
+							if(event.keyCode===13||event.which===13){
+								ctrlAddItem();
 
-			}
-		  });
-
-
-	}
+		                                   	}
+		                               });
+						            }
 
 						
-							 var updateBudget=function(){
-
-
-
-							 }
+				       var updateBudget=function(){
+                                                 budgetCtrl.calculateBudget();
+                                                 var budget=budgetCtrl.getBudget();
+                                                 //console.log(budget); 
+                                                   }
 
 							var ctrlAddItem=function(){
 								var input,newItem;
